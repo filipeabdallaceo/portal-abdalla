@@ -2,32 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { --brand: #10b981; }
-
-body {
-  background-color: #0f172a;
-  color: #f1f5f9;
-  font-family: system-ui, -apple-system, sans-serif;
+:root {
+    --navy: #0a1e38;
+    --navy2: #112d54;
+    --navy3: #1a3d6e;
+    --gold: #c9932a;
+    --gold2: #e8b04a;
+    --border-gold: rgba(201,147,42,.25);
+    --border-gold2: rgba(201,147,42,.45);
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #1e293b; }
-::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+body {
+    background-color: #0a1e38;
+    color: #ffffff;
+    font-family: system-ui, -apple-system, sans-serif;
+}
 
-/* Animação de entrada */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0a1e38; }
+::-webkit-scrollbar-thumb { background: rgba(201,147,42,.3); border-radius: 3px; }
+
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 .fade-up { animation: fadeUp .35s ease both; }
 
-/* File drop zone */
 .drop-zone {
-  border: 2px dashed #334155;
-  transition: border-color .2s, background .2s;
+    border: 2px dashed rgba(201,147,42,.3);
+    transition: border-color .2s, background .2s;
 }
 .drop-zone.over {
-  border-color: #10b981;
-  background: rgba(16,185,129,.05);
+    border-color: #c9932a;
+    background: rgba(201,147,42,.05);
 }

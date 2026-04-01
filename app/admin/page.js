@@ -173,16 +173,21 @@ export default function AdminPage() {
             <p className="text-sm text-slate-500 mt-1">Escolha na lista ao lado para ver e editar o portal</p>
             {/* Métricas gerais */}
             <div className="grid grid-cols-3 gap-4 mt-10 w-full max-w-lg">
-              {[
-                { label: 'Mentorados ativos', value: mentees.length },
-                { label: 'Total de sessões', value: mentees.reduce((a, m) => a + (m.sessions?.[0]?.count || 0), 0) },
-                { label: 'Taxa média', value: `${mentees.length ? Math.round(mentees.reduce((a, m) => a + ((m.sessions?.[0]?.count || 0) / 8 * 100), 0) / mentees.length : 0}%` },
-              ].map(card => (
-                <div key={card.label} className="rounded-xl p-4 text-center" style={{ background: '#1e293b', border: '1px solid #334155' }}>
-                  <p className="text-2xl font-semibold text-white">{card.value}</p>
-                  <p className="text-xs text-slate-500 mt-1">{card.label}</p>
-                </div>
-              ))}
+              {(() => {
+                const totalSess = mentees.reduce((a, m) => a + (m.sessions?.[0]?.count || 0), 0)
+                const taxaMedia = mentees.length ? Math.round(mentees.reduce((a, m) => a + ((m.sessions?.[0]?.count || 0) / 8 * 100), 0) / mentees.length) : 0
+                const cards = [
+                  { label: 'Mentorados ativos', value: mentees.length },
+                  { label: 'Total de sessões', value: totalSess },
+                  { label: 'Taxa média', value: taxaMedia + '%' },
+                ]
+                return cards.map(card => (
+                  <div key={card.label} className="rounded-xl p-4 text-center" style={{ background: '#1e293b', border: '1px solid #334155' }}>
+                    <p className="text-2xl font-semibold text-white">{card.value}</p>
+                    <p className="text-xs text-slate-500 mt-1">{card.label}</p>
+                  </div>
+                ))
+              })()}
             </div>
           </div>
         ) : (

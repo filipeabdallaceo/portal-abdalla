@@ -110,7 +110,7 @@ export default function PortalPage() {
               Minha pasta
             </a>
           )}
-          <a href="https://wa.me/5521999999999" target="_blank" rel="noreferrer"
+          <a href="https://wa.me/5567992076011" target="_blank" rel="noreferrer"
             style={{ fontSize: 12, padding: '6px 12px', borderRadius: 8, background: 'rgba(201,147,42,.12)', border: '1px solid rgba(201,147,42,.3)', color: GOLD2, textDecoration: 'none' }}>
             Falar com a Paola
           </a>

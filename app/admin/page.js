@@ -46,6 +46,7 @@ export default function AdminPage() {
 
   async function selectMentee(m) {
     setSelected(m)
+    setDriveUrl(m.drive_folder_url || '')
     setTab('Sessões')
     const [{ data: sess }, { data: meet }, { data: gols }, { data: fils }] = await Promise.all([
       supabase.from('sessions').select('*').eq('mentee_id', m.id).order('session_number'),

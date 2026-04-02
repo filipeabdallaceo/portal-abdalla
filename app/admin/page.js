@@ -17,6 +17,7 @@ export default function AdminPage() {
   const [tab,      setTab]      = useState('Sessões')
   const [loading,  setLoading]  = useState(true)
   const [saving,   setSaving]   = useState(false)
+  const [driveUrl, setDriveUrl]  = useState('')
 
   /* Modal de nova reunião */
   const [meetModal, setMeetModal] = useState(false)
@@ -35,6 +36,14 @@ export default function AdminPage() {
     init()
   }, [])
 
+  async function saveDriveUrl() {
+    if (!selected) return
+    setSaving(true)
+    await supabase.from('profiles').update({ drive_folder_url: driveUrl }).eq('id', selected.id)
+    setSaving(false)
+    alert('Link do Drive salvo!')
+  }
+
   async function loadMentees() {
     const { data } = await supabase
       .from('profiles')
@@ -46,6 +55,7 @@ export default function AdminPage() {
 
   async function selectMentee(m) {
     setSelected(m)
+    setDriveUrl(m.drive_folder_url || '')
     setDriveUrl(m.drive_folder_url || '')
     setTab('Sessões')
     const [{ data: sess }, { data: meet }, { data: gols }, { data: fils }] = await Promise.all([

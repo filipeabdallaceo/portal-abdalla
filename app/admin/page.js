@@ -211,7 +211,15 @@ export default function AdminPage() {
               </div>
               <div className="flex-1">
                 <h2 className="text-base font-semibold text-white">{selected.full_name}</h2>
-                <p className="text-xs text-slate-500">{selected.email} · Início: {formatDate(selected.start_date)}</p>
+                
+              {selected.drive_folder_url && (
+                <a href={selected.drive_folder_url} target="_blank" rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
+                  style={{ background: 'rgba(201,147,42,.15)', color: '#e8b04a', border: '1px solid rgba(201,147,42,.4)', textDecoration: 'none' }}>
+                  📁 Pasta do Drive
+                </a>
+              )}
+              <p className="text-xs text-slate-500">{selected.email} · Início: {formatDate(selected.start_date)}</p>
               </div>
               {/* Campo Google Drive */}
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: '#1e293b', border: '1px solid rgba(201,147,42,.4)' }}>

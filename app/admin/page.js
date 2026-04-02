@@ -213,6 +213,22 @@ export default function AdminPage() {
                 <h2 className="text-base font-semibold text-white">{selected.full_name}</h2>
                 <p className="text-xs text-slate-500">{selected.email} · Início: {formatDate(selected.start_date)}</p>
               </div>
+              {/* Campo Google Drive */}
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: '#1e293b', border: '1px solid rgba(201,147,42,.4)' }}>
+                <span style={{ fontSize:11, color:'rgba(201,147,42,.8)', fontWeight:600, whiteSpace:'nowrap' }}>Drive</span>
+                <input
+                  value={driveUrl}
+                  onChange={e => setDriveUrl(e.target.value)}
+                  placeholder="https://drive.google.com/drive/folders/..."
+                  style={{ width:280, fontSize:12, padding:'2px 8px', borderRadius:6, background:'#0f172a', border:'1px solid rgba(201,147,42,.25)', color:'#fff', outline:'none', fontFamily:'inherit' }}
+                />
+                <button
+                  onClick={saveDriveUrl}
+                  disabled={saving}
+                  style={{ fontSize:11, padding:'4px 12px', borderRadius:6, background:'#c9932a', color:'#0a1e38', border:'none', cursor:'pointer', fontWeight:700, fontFamily:'inherit', opacity:saving?0.6:1, whiteSpace:'nowrap' }}>
+                  {saving ? '...' : 'Salvar'}
+                </button>
+              </div>
               <div className="flex items-center gap-2">
                 {/* Progresso */}
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs" style={{ background: '#1e293b', border: '1px solid #334155' }}>

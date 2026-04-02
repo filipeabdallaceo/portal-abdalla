@@ -5,79 +5,62 @@ import { useRouter } from 'next/navigation'
 import { LOGO_B64 } from '../../lib/logo'
 
 export default function LoginPage() {
-  const [email, setEmail]       = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading]   = useState(false)
-  const [error, setError]       = useState('')
-  const router  = useRouter()
   const supabase = createClientComponentClient()
+  const router = useRouter()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   async function handleLogin(e) {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password })
-    if (authError) {
-      setError('E-mail ou senha incorretos. Tente novamente.')
-      setLoading(false)
-      return
-    }
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.user.id).single()
-    router.push(profile?.role === 'admin' ? '/admin' : '/portal')
-    router.refresh()
+    const { error: err } = await supabase.auth.signInWithPassword({ email, password })
+    if (err) { setError('E-mail ou senha incorretos.'); setLoading(false); return }
+    const { data: { user } } = await supabase.auth.getUser()
+    const { data: prof } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    router.push(prof?.role === 'admin' ? '/admin' : '/portal')
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden"
-         style={{ background: '#0a1e38' }}>
-      <svg style={{ position:'absolute',inset:0,width:'100%',height:'100%',opacity:.08,pointerEvents:'none' }} viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
-        <line x1="0" y1="150" x2="800" y2="400" stroke="#c9932a" strokeWidth="1"/>
-        <line x1="0" y1="350" x2="600" y2="0" stroke="#c9932a" strokeWidth="1"/>
-        <line x1="200" y1="600" x2="800" y2="200" stroke="#c9932a" strokeWidth="1"/>
-        <line x1="400" y1="0" x2="700" y2="600" stroke="#c9932a" strokeWidth="0.6"/>
-        <line x1="0" y1="500" x2="800" y2="100" stroke="#c9932a" strokeWidth="0.6"/>
+    <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', background:'#0a1e38', position:'relative', overflow:'hidden' }}>
+      <svg style={{ position:'absolute', inset:0, width:'100%', height:'100%', pointerEvents:'none', opacity:.06 }} viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+        <line x1="800" y1="0" x2="200" y2="600" stroke="#c9932a" strokeWidth="1"/>
+        <line x1="800" y1="100" x2="350" y2="600" stroke="#c9932a" strokeWidth="1"/>
+        <line x1="800" y1="250" x2="500" y2="600" stroke="#c9932a" strokeWidth="1"/>
+        <line x1="0" y1="0" x2="600" y2="600" stroke="#c9932a" strokeWidth="0.5"/>
       </svg>
-      <div className="w-full max-w-md fade-up" style={{ zIndex:1 }}>
-        <div className="rounded-2xl p-8" style={{ background:'#112d54', border:'1px solid rgba(201,147,42,.25)' }}>
-          <div className="text-center mb-8">
-            <img src={LOGO_B64} alt="Filipe Abdalla" style={{ height:90, margin:'0 auto 12px', filter:'brightness(0) invert(1)' }}/>
-            <p style={{ fontSize:11, color:'#c9932a', letterSpacing:'1.5px', textTransform:'uppercase', marginTop:4 }}>Portal de Mentoria · Gestão e Carreira</p>
-          </div>
-          <form onSubmit={handleLogin} className="space-y-5">
-            <div>
-              <label style={{ display:'block', fontSize:11, color:'rgba(255,255,255,.5)', marginBottom:6, letterSpacing:'1px', textTransform:'uppercase' }}>E-mail</label>
-              <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="seu@email.com"
-                className="w-full px-4 py-3 rounded-lg text-sm text-white placeholder-slate-500 outline-none transition"
-                style={{ background:'#0a1e38', border:'1px solid rgba(201,147,42,.25)' }}
-                onFocus={e => e.target.style.borderColor = '#c9932a'}
-                onBlur={e => e.target.style.borderColor = 'rgba(201,147,42,.25)'}/>
+      <div style={{ width:'100%', maxWidth:400, padding:'0 24px', position:'relative', zIndex:1 }}>
+        <div style={{ textAlign:'center', marginBottom:40 }}>
+          <img src={LOGO_B64} alt="Filipe Abdalla" style={{ height:48, filter:'brightness(0) invert(1)', marginBottom:12 }}/>
+          <p style={{ fontSize:13, color:'rgba(255,255,255,.4)', margin:0, letterSpacing:'.5px' }}>PORTAL MENTORIA · GESTÃO & CARREIRA</p>
+        </div>
+        <div style={{ background:'#112d54', borderRadius:16, padding:'36px 32px', border:'1px solid rgba(201,147,42,.2)', boxShadow:'0 24px 64px rgba(0,0,0,.4)' }}>
+          <h2 style={{ fontSize:20, fontWeight:600, color:'#fff', margin:'0 0 6px' }}>Bem-vindo</h2>
+          <p style={{ fontSize:13, color:'rgba(255,255,255,.4)', margin:'0 0 28px' }}>Acesso exclusivo para mentorados</p>
+          <form onSubmit={handleLogin}>
+            <div style={{ marginBottom:16 }}>
+              <label style={{ display:'block', fontSize:12, fontWeight:500, color:'rgba(255,255,255,.5)', marginBottom:6, letterSpacing:'.5px' }}>E-MAIL</label>
+              <input type="email" value={email} onChange={e=>setEmail(e.target.value)} required placeholder="seu@email.com"
+                style={{ width:'100%', padding:'11px 14px', borderRadius:8, fontSize:14, color:'#fff', background:'rgba(255,255,255,.06)', border:'1px solid rgba(201,147,42,.2)', outline:'none', boxSizing:'border-box', fontFamily:'inherit' }}/>
             </div>
-            <div>
-              <label style={{ display:'block', fontSize:11, color:'rgba(255,255,255,.5)', marginBottom:6, letterSpacing:'1px', textTransform:'uppercase' }}>Senha</label>
-              <input type="password" required value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••"
-                className="w-full px-4 py-3 rounded-lg text-sm text-white placeholder-slate-500 outline-none transition"
-                style={{ background:'#0a1e38', border:'1px solid rgba(201,147,42,.25)' }}
-                onFocus={e => e.target.style.borderColor = '#c9932a'}
-                onBlur={e => e.target.style.borderColor = 'rgba(201,147,42,.25)'}/>
+            <div style={{ marginBottom:24 }}>
+              <label style={{ display:'block', fontSize:12, fontWeight:500, color:'rgba(255,255,255,.5)', marginBottom:6, letterSpacing:'.5px' }}>SENHA</label>
+              <input type="password" value={password} onChange={e=>setPassword(e.target.value)} required placeholder="••••••••"
+                style={{ width:'100%', padding:'11px 14px', borderRadius:8, fontSize:14, color:'#fff', background:'rgba(255,255,255,.06)', border:'1px solid rgba(201,147,42,.2)', outline:'none', boxSizing:'border-box', fontFamily:'inherit' }}/>
             </div>
-            {error && (
-              <div style={{ fontSize:13, color:'#f87171', background:'rgba(239,68,68,.1)', border:'1px solid rgba(239,68,68,.3)', borderRadius:8, padding:'10px 14px' }}>
-                {error}
-              </div>
-            )}
+            {error && <div style={{ marginBottom:16, padding:'10px 14px', borderRadius:8, background:'rgba(239,68,68,.1)', border:'1px solid rgba(239,68,68,.3)', fontSize:13, color:'#fca5a5' }}>{error}</div>}
             <button type="submit" disabled={loading}
-              className="w-full py-3 rounded-lg text-sm font-medium transition-all disabled:opacity-60"
-              style={{ background:'#c9932a', color:'#0a1e38', letterSpacing:'.5px' }}
-              onMouseEnter={e => !loading && (e.target.style.background = '#b07d22')}
-              onMouseLeave={e => e.target.style.background = '#c9932a'}>
+              style={{ width:'100%', padding:'13px', borderRadius:8, fontSize:14, fontWeight:600, color:'#0a1e38', background:loading?'rgba(201,147,42,.5)':'#c9932a', border:'none', cursor:loading?'not-allowed':'pointer', fontFamily:'inherit', letterSpacing:'.3px' }}>
               {loading ? 'Entrando...' : 'Entrar no Portal'}
             </button>
           </form>
         </div>
-        <p style={{ textAlign:'center', fontSize:11, color:'rgba(255,255,255,.25)', marginTop:20 }}>
-          Acesso exclusivo para mentorados · Problemas? Fale com a Paola
+        <p style={{ textAlign:'center', marginTop:20, fontSize:12, color:'rgba(255,255,255,.25)' }}>
+          Problemas? Fale com a <a href="https://wa.me/5567992076011" target="_blank" rel="noreferrer" style={{ color:'rgba(201,147,42,.6)' }}>Paola</a>
         </p>
       </div>
     </div>
   )
-                                            }
+}

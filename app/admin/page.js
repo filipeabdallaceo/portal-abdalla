@@ -56,7 +56,6 @@ export default function AdminPage() {
   async function selectMentee(m) {
     setSelected(m)
     setDriveUrl(m.drive_folder_url || '')
-    setDriveUrl(m.drive_folder_url || '')
     setTab('Sessões')
     const [{ data: sess }, { data: meet }, { data: gols }, { data: fils }] = await Promise.all([
       supabase.from('sessions').select('*').eq('mentee_id', m.id).order('session_number'),
@@ -91,7 +90,16 @@ export default function AdminPage() {
   /* ── Salvar tarefa ── */
   async function saveHomework(sessionNumber, homework) {
     const existing = sessions.find(s => s.session_number === sessionNumber)
-    if (existing) await supabase.from('sessions').update({ homework }).eq('id', existing.id)
+    if (existing) {
+      await supabase.from('sessions').update({ homework }).eq('id', existing.id)
+    } else {
+      // Sessão ainda sem registro: cria como "Aguardando" para a tarefa não se perder
+      const sd = SESSION_DATA.find(s => s.number === sessionNumber)
+      await supabase.from('sessions').insert({
+        mentee_id: selected.id, session_number: sessionNumber,
+        title: sd.title, description: sd.desc, status: 'pending', homework
+      })
+    }
     const { data } = await supabase.from('sessions').select('*').eq('mentee_id', selected.id).order('session_number')
     setSessions(data || [])
   }
@@ -99,7 +107,17 @@ export default function AdminPage() {
   /* ── Criar reunião ── */
   async function createMeeting() {
     if (!meetForm.title || !meetForm.scheduled_at) return
-    await supabase.from('meetings').insert({ ...meetForm, mentee_id: selected.id, status: 'scheduled' })
+    // O campo datetime-local vem sem fuso ("2026-09-10T14:00"). Convertendo para ISO
+    // o horário é gravado no fuso de quem cadastrou; antes era gravado como UTC e o
+    // mentorado via a reunião 3 horas mais cedo.
+    const scheduledAt = new Date(meetForm.scheduled_at).toISOString()
+    await supabase.from('meetings').insert({
+      ...meetForm,
+      scheduled_at: scheduledAt,
+      session_id: meetForm.session_id || null,
+      mentee_id: selected.id,
+      status: 'scheduled',
+    })
     const { data } = await supabase.from('meetings').select('*').eq('mentee_id', selected.id).order('scheduled_at')
     setMeetings(data || [])
     setMeetModal(false)

@@ -21,9 +21,13 @@ create table if not exists public.profiles (
   start_date    date,
   investment    numeric(10,2) default 7000,
   payment_method text default 'à vista',
+  drive_folder_url text,
   role          text not null default 'mentee' check (role in ('mentee','admin')),
   created_at    timestamptz default now()
 );
+
+-- Bancos criados antes da coluna existir: adiciona sem quebrar nada
+alter table public.profiles add column if not exists drive_folder_url text;
 
 -- ─────────────────────────────────────
 --  TABELA: sessions

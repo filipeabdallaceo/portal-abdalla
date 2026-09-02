@@ -704,26 +704,27 @@ function ProfileForm({ profile, busy, onSave }) {
     drive_folder_url: profile.drive_folder_url || '',
   })
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }))
-  const Field = ({ label, k, type = 'text', placeholder }) => (
-    <ProfileField label={label} type={type} placeholder={placeholder} value={form[k]} onChange={v => set(k, v)} />
+  // Função comum (não um componente): assim o input não é recriado a cada tecla e mantém o foco
+  const field = (label, k, type = 'text', placeholder) => (
+    <ProfileField key={k} label={label} type={type} placeholder={placeholder} value={form[k]} onChange={v => set(k, v)} />
   )
   return (
     <div className="rounded-xl p-5 space-y-4 max-w-2xl" style={CARD}>
       <div>
         <p className="text-xs text-slate-500 mb-1">E-mail de acesso</p>
         <p className="text-sm text-slate-300">{profile.email}</p>
-        <p className="text-xs text-slate-600 mt-1">Para trocar senha ou e-mail: Supabase → Authentication → Users.</p>
+        <p className="text-xs text-slate-600 mt-1">Para trocar a senha, use "Redefinir senha do mentorado" logo abaixo.</p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Field label="Nome completo" k="full_name" />
-        <Field label="Especialidade" k="specialty" placeholder="Ex: Fisioterapeuta Empreendedora" />
-        <Field label="Cidade" k="city" placeholder="Ex: Campo Grande, MS" />
-        <Field label="WhatsApp" k="whatsapp" placeholder="Ex: 67 99999-9999" />
-        <Field label="Data de início" k="start_date" type="date" />
-        <Field label="Investimento (R$)" k="investment" type="number" placeholder="7000" />
+        {field('Nome completo', 'full_name')}
+        {field('Especialidade', 'specialty', 'text', 'Ex: Fisioterapeuta Empreendedora')}
+        {field('Cidade', 'city', 'text', 'Ex: Campo Grande, MS')}
+        {field('WhatsApp', 'whatsapp', 'text', 'Ex: 67 99999-9999')}
+        {field('Data de início', 'start_date', 'date')}
+        {field('Investimento (R$)', 'investment', 'number', '7000')}
       </div>
-      <Field label="Link da pasta no Google Drive" k="drive_folder_url" placeholder="https://drive.google.com/drive/folders/..." />
-      <Field label="URL da foto (opcional)" k="photo_url" placeholder="https://..." />
+      {field('Link da pasta no Google Drive', 'drive_folder_url', 'text', 'https://drive.google.com/drive/folders/...')}
+      {field('URL da foto (opcional)', 'photo_url', 'text', 'https://...')}
       <div className="flex items-center gap-3 pt-1">
         <button onClick={() => onSave(form)} disabled={busy} className={btnPrimary} style={{ background: '#c9932a', color: '#0a1e38', opacity: busy ? .6 : 1 }}>Salvar perfil</button>
         <span className="text-xs text-slate-600">As alterações aparecem na hora no portal do mentorado.</span>

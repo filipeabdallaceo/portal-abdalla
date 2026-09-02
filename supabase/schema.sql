@@ -156,6 +156,14 @@ create policy "Download próprio arquivo" on storage.objects
     (auth.uid()::text = (storage.foldername(name))[1] or public.is_admin())
   );
 
+-- Excluir arquivo (mentorado apaga só o que está na própria pasta; admin apaga qualquer um)
+drop policy if exists "Excluir próprio arquivo" on storage.objects;
+create policy "Excluir próprio arquivo" on storage.objects
+  for delete using (
+    bucket_id = 'mentee-files' and
+    (auth.uid()::text = (storage.foldername(name))[1] or public.is_admin())
+  );
+
 -- ============================================================
 --  TRIGGER: Cria perfil automaticamente após signup
 -- ============================================================

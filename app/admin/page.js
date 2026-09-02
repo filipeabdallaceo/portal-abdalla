@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation'
 import {
   SESSION_DATA, TOTAL_SESSIONS, getInitials, formatDate, formatTime, formatWeekday, parseDate, safeStorageName,
 } from '../../lib/supabase'
+import { LOGO_B64 } from '../../lib/logo'
 
-const CARD = { background: '#1e293b', border: '1px solid #334155' }
-const INP = { background: '#0f172a', border: '1px solid #334155' }
+const CARD = { background: '#112d54', border: '1px solid rgba(201,147,42,.25)' }
+const INP = { background: '#071526', border: '1px solid rgba(201,147,42,.25)' }
 const inp = 'w-full text-sm px-3 py-2 rounded-lg text-white outline-none placeholder-slate-600'
 const btnPrimary = 'text-xs px-4 py-2 rounded-lg font-medium'
 const btnGhost = 'text-xs px-3 py-2 rounded-lg text-slate-400 hover:text-white transition'
@@ -57,6 +58,7 @@ export default function AdminPage() {
   const [busy,     setBusy]     = useState(false)
   const [toast,    setToast]    = useState(null)
   const [uploading, setUploading] = useState(false)
+  const [newMentee, setNewMentee] = useState(false)
   const fileRef = useRef()
 
   function notify(type, text) {
@@ -254,13 +256,41 @@ export default function AdminPage() {
     notify('ok', 'Arquivo excluído')
   }
 
+  /* ── Novo mentorado (função segura no banco, só admin) ── */
+  async function createMentee(form) {
+    const { data, error } = await supabase.rpc('admin_create_mentee', {
+      p_email: form.email.trim(),
+      p_password: form.password,
+      p_full_name: form.full_name.trim(),
+      p_specialty: form.specialty || null,
+      p_city: form.city || null,
+      p_whatsapp: form.whatsapp || null,
+      p_start_date: form.start_date || null,
+      p_investment: form.investment === '' ? 7000 : Number(form.investment),
+      p_drive_folder_url: form.drive_folder_url || null,
+    })
+    if (error) return { error: error.message.replace(/^.*?exception:?\s*/i, '') }
+    await loadMentees()
+    const { data: prof } = await supabase.from('profiles').select('*, sessions(status)').eq('id', data).maybeSingle()
+    if (prof) selectMentee(prof)
+    notify('ok', `${form.full_name.trim()} cadastrado(a)`)
+    return { id: data }
+  }
+
+  async function resetMenteePassword(password) {
+    const { error } = await supabase.rpc('admin_set_password', { p_user_id: selected.id, p_password: password })
+    if (error) return fail(error, 'Não foi possível redefinir a senha')
+    notify('ok', 'Senha redefinida para ' + selected.full_name)
+    return true
+  }
+
   async function handleLogout() {
     await supabase.auth.signOut()
     router.replace('/login')
   }
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: '#0f172a' }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ background: '#0a1e38' }}>
       <p className="text-slate-500 animate-pulse text-sm">Carregando painel...</p>
     </div>
   )
@@ -268,29 +298,30 @@ export default function AdminPage() {
   const doneCount = sessions.filter(s => s.status === 'completed').length
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row" style={{ background: '#0f172a' }}>
+    <div className="min-h-screen flex flex-col md:flex-row" style={{ background: '#0a1e38' }}>
       {/* ─ SIDEBAR MENTORADOS ─ */}
-      <aside className="w-full md:w-72 flex-shrink-0 border-b md:border-b-0 md:border-r border-slate-800 flex flex-col md:h-screen md:sticky md:top-0">
-        <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+      <aside className="w-full md:w-72 flex-shrink-0 border-b md:border-b-0 md:border-r border-[#1c3560] flex flex-col md:h-screen md:sticky md:top-0">
+        <div className="p-5 border-b border-[#1c3560] flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-6 h-6 rounded flex items-center justify-center" style={{ background: 'rgba(16,185,129,.15)' }}>
-                <svg width="12" height="12" viewBox="0 0 32 32" fill="none"><path d="M16 4C9.4 4 4 9.4 4 16s5.4 12 12 12 12-5.4 12-12S22.6 4 16 4z" stroke="#10b981" strokeWidth="1.5" fill="rgba(16,185,129,.2)"/><path d="M16 9v7l5 3" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              </div>
-              <span className="text-sm font-semibold text-white">Painel Admin</span>
-            </div>
+            <img src={LOGO_B64} alt="Filipe Abdalla" style={{ height: 30, filter: 'brightness(0) invert(1)', marginBottom: 6 }} />
+            <p className="text-sm font-semibold text-white">Painel Admin</p>
             <p className="text-xs text-slate-500">{me ? me.full_name : 'Gestão de Mentorados'}</p>
           </div>
           <button onClick={handleLogout} className="md:hidden text-xs text-slate-500 hover:text-white">Sair</button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-3 space-y-1 max-h-56 md:max-h-none">
+        <div className="flex-1 overflow-y-auto p-3 space-y-1 max-h-72 md:max-h-none">
+          <button onClick={() => setNewMentee(true)}
+            className="w-full py-2 rounded-xl text-sm font-medium transition mb-2"
+            style={{ background: 'rgba(201,147,42,.15)', color: '#c9932a', border: '1px dashed rgba(201,147,42,.4)' }}>
+            + Novo mentorado
+          </button>
           <p className="text-xs text-slate-600 px-2 py-1 font-medium">Mentorados ativos ({mentees.length})</p>
           {mentees.map(m => (
             <button key={m.id} onClick={() => selectMentee(m)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition ${selected && selected.id === m.id ? 'bg-emerald-900/30 border border-emerald-800/40' : 'hover:bg-slate-800'}`}>
-              <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 text-emerald-400"
-                   style={{ background: 'rgba(16,185,129,.1)', border: '1px solid rgba(16,185,129,.2)' }}>
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition ${selected && selected.id === m.id ? 'bg-[rgba(201,147,42,.12)] border border-[rgba(201,147,42,.4)]' : 'hover:bg-[#112d54]'}`}>
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 text-[#e8b04a]"
+                   style={{ background: 'rgba(201,147,42,.1)', border: '1px solid rgba(201,147,42,.2)' }}>
                 {getInitials(m.full_name)}
               </div>
               <div className="flex-1 min-w-0">
@@ -301,7 +332,7 @@ export default function AdminPage() {
           ))}
         </div>
 
-        <div className="hidden md:block p-3 border-t border-slate-800">
+        <div className="hidden md:block p-3 border-t border-[#1c3560]">
           <button onClick={handleLogout} className="w-full text-xs text-slate-500 hover:text-white py-2 transition">Sair</button>
         </div>
       </aside>
@@ -310,8 +341,8 @@ export default function AdminPage() {
       <main className="flex-1 flex flex-col min-w-0">
         {!selected ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center px-8 py-16">
-            <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ background: 'rgba(16,185,129,.1)', border: '1px solid rgba(16,185,129,.2)' }}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ background: 'rgba(201,147,42,.1)', border: '1px solid rgba(201,147,42,.2)' }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c9932a" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
             </div>
             <p className="text-white font-medium">Selecione um mentorado</p>
             <p className="text-sm text-slate-500 mt-1">Escolha na lista para editar sessões, reuniões, metas, arquivos e perfil</p>
@@ -331,16 +362,16 @@ export default function AdminPage() {
                 ))
               })()}
             </div>
-            <p className="text-xs text-slate-600 mt-10 max-w-md">
-              Para cadastrar um novo mentorado: Supabase → Authentication → Users → Add user. O perfil é criado automaticamente e aparece aqui para você completar na aba Perfil.
-            </p>
+            <button onClick={() => setNewMentee(true)} className="mt-10 text-sm px-5 py-2.5 rounded-xl font-medium" style={{ background: '#c9932a', color: '#0a1e38' }}>
+              + Cadastrar novo mentorado
+            </button>
           </div>
         ) : (
           <>
             {/* Header do mentorado */}
-            <div className="flex flex-wrap items-center gap-4 p-5 border-b border-slate-800">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold text-emerald-400 flex-shrink-0"
-                   style={{ background: 'rgba(16,185,129,.1)', border: '1px solid rgba(16,185,129,.2)' }}>
+            <div className="flex flex-wrap items-center gap-4 p-5 border-b border-[#1c3560]">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold text-[#e8b04a] flex-shrink-0"
+                   style={{ background: 'rgba(201,147,42,.1)', border: '1px solid rgba(201,147,42,.2)' }}>
                 {getInitials(selected.full_name)}
               </div>
               <div className="flex-1 min-w-[200px]">
@@ -351,8 +382,8 @@ export default function AdminPage() {
                 </p>
               </div>
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs" style={CARD}>
-                <div className="w-16 h-1 rounded-full bg-slate-700 overflow-hidden">
-                  <div className="h-full rounded-full bg-emerald-500" style={{ width: `${(doneCount / TOTAL_SESSIONS) * 100}%` }}/>
+                <div className="w-16 h-1 rounded-full bg-[rgba(255,255,255,.1)] overflow-hidden">
+                  <div className="h-full rounded-full bg-[#c9932a]" style={{ width: `${(doneCount / TOTAL_SESSIONS) * 100}%` }}/>
                 </div>
                 <span className="text-slate-400">{doneCount}/{TOTAL_SESSIONS}</span>
               </div>
@@ -360,10 +391,10 @@ export default function AdminPage() {
             </div>
 
             {/* Sub-tabs */}
-            <div className="flex border-b border-slate-800 px-5 overflow-x-auto">
+            <div className="flex border-b border-[#1c3560] px-5 overflow-x-auto">
               {TABS.map(t => (
                 <button key={t} onClick={() => setTab(t)}
-                  className={`py-3 px-4 text-sm transition border-b-2 whitespace-nowrap ${tab === t ? 'text-emerald-400 border-emerald-500' : 'text-slate-500 border-transparent hover:text-white'}`}>
+                  className={`py-3 px-4 text-sm transition border-b-2 whitespace-nowrap ${tab === t ? 'text-[#e8b04a] border-[#c9932a]' : 'text-slate-500 border-transparent hover:text-white'}`}>
                   {t}{t === 'Arquivos' && files.length > 0 ? ` (${files.length})` : ''}
                 </button>
               ))}
@@ -391,23 +422,23 @@ export default function AdminPage() {
                 <>
                   <div onClick={() => !uploading && fileRef.current && fileRef.current.click()}
                     className="rounded-xl p-6 text-center cursor-pointer"
-                    style={{ border: '1px dashed rgba(16,185,129,.4)', background: 'rgba(16,185,129,.05)' }}>
+                    style={{ border: '1px dashed rgba(201,147,42,.4)', background: 'rgba(201,147,42,.05)' }}>
                     <input ref={fileRef} type="file" className="hidden" onChange={e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; uploadFile(f) }} />
-                    <p className="text-sm font-medium" style={{ color: '#10b981' }}>{uploading ? 'Enviando...' : `+ Enviar arquivo para ${selected.full_name.split(' ')[0]}`}</p>
+                    <p className="text-sm font-medium" style={{ color: '#c9932a' }}>{uploading ? 'Enviando...' : `+ Enviar arquivo para ${selected.full_name.split(' ')[0]}`}</p>
                     <p className="text-xs text-slate-500 mt-1">O mentorado vê o arquivo na aba Arquivos do portal · até {MAX_UPLOAD_MB} MB</p>
                   </div>
                   {files.length === 0 ? (
                     <p className="text-sm text-slate-600 text-center py-8">Nenhum arquivo ainda.</p>
                   ) : files.map(f => (
                     <div key={f.id} className="flex items-center gap-3 p-3 rounded-xl" style={CARD}>
-                      <span className="text-xs font-semibold px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 flex-shrink-0">
+                      <span className="text-xs font-semibold px-1.5 py-0.5 rounded bg-[rgba(201,147,42,.15)] text-[#e8b04a] flex-shrink-0">
                         {((f.name || '').includes('.') ? f.name.split('.').pop() : 'ARQ').toUpperCase().slice(0, 5)}
                       </span>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-slate-200 truncate">{f.name}</p>
                         <p className="text-xs text-slate-500">{fmtBytes(f.size)} · {formatDate(f.created_at)} · {f.uploaded_by === selected.id ? 'enviado pelo mentorado' : 'enviado por você'}</p>
                       </div>
-                      <button onClick={() => downloadFile(f)} className={btnGhost} style={{ border: '1px solid #334155' }}>Baixar</button>
+                      <button onClick={() => downloadFile(f)} className={btnGhost} style={{ border: '1px solid rgba(201,147,42,.25)' }}>Baixar</button>
                       <button onClick={() => deleteFile(f)} className="text-xs px-3 py-2 rounded-lg text-red-400 hover:text-red-300" style={{ border: '1px solid rgba(239,68,68,.3)' }}>Excluir</button>
                     </div>
                   ))}
@@ -416,18 +447,23 @@ export default function AdminPage() {
 
               {/* ── PERFIL ── */}
               {tab === 'Perfil' && (
-                <ProfileForm key={selected.id} profile={selected} busy={busy} onSave={saveProfile} />
+                <>
+                  <ProfileForm key={selected.id} profile={selected} busy={busy} onSave={saveProfile} />
+                  <PasswordReset key={'pw-' + selected.id} onReset={resetMenteePassword} />
+                </>
               )}
             </div>
           </>
         )}
       </main>
 
+      {newMentee && <NewMenteeModal onCreate={createMentee} onClose={() => setNewMentee(false)} />}
+
       {toast && (
         <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl text-sm shadow-lg"
           style={toast.type === 'error'
             ? { background: '#3f1d1d', color: '#fca5a5', border: '1px solid rgba(239,68,68,.4)' }
-            : { background: '#0f2f24', color: '#6ee7b7', border: '1px solid rgba(16,185,129,.4)' }}>
+            : { background: '#112d54', color: '#e8b04a', border: '1px solid rgba(201,147,42,.5)' }}>
           {toast.text}
         </div>
       )}
@@ -450,7 +486,7 @@ function SessionCard({ sd, sess, onSave }) {
     <div className="rounded-xl p-4" style={CARD}>
       <div className="flex items-start gap-4">
         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 ${
-          status === 'completed' ? 'bg-emerald-900/50 text-emerald-400' : status === 'current' ? 'bg-sky-500 text-white' : 'bg-slate-800 text-slate-500'}`}>
+          status === 'completed' ? 'bg-[rgba(201,147,42,.15)] text-[#e8b04a]' : status === 'current' ? 'bg-[#c9932a] text-[#0a1e38]' : 'bg-[rgba(255,255,255,.05)] text-slate-500'}`}>
           {sd.number}
         </div>
         <div className="flex-1 min-w-0">
@@ -460,9 +496,9 @@ function SessionCard({ sd, sess, onSave }) {
             {ITEM_STATUS.map(([s, label]) => (
               <button key={s} onClick={() => onSave(sd.number, { status: s })}
                 className={`text-xs px-3 py-1 rounded-full transition border ${status === s
-                  ? s === 'completed' ? 'bg-emerald-900/40 text-emerald-400 border-emerald-700'
-                    : s === 'current' ? 'bg-sky-900/40 text-sky-400 border-sky-700'
-                    : 'bg-slate-700 text-slate-300 border-slate-600'
+                  ? s === 'completed' ? 'bg-[rgba(201,147,42,.15)] text-[#e8b04a] border-[rgba(201,147,42,.5)]'
+                    : s === 'current' ? 'bg-[#c9932a] text-[#0a1e38] border-[#c9932a]'
+                    : 'bg-[rgba(255,255,255,.08)] text-slate-200 border-[rgba(255,255,255,.2)]'
                   : 'text-slate-600 border-slate-700 hover:text-slate-400'}`}>
                 {label}
               </button>
@@ -479,7 +515,7 @@ function SessionCard({ sd, sess, onSave }) {
             </div>
           </div>
           {sess && sess.notes && (
-            <div className="mt-3 rounded-lg p-3" style={{ background: '#0f172a', borderLeft: '3px solid #c9932a' }}>
+            <div className="mt-3 rounded-lg p-3" style={{ background: '#071526', borderLeft: '3px solid #c9932a' }}>
               <p className="text-xs text-slate-500 mb-1">Anotações do mentorado</p>
               <p className="text-xs text-slate-300 whitespace-pre-wrap">{sess.notes}</p>
             </div>
@@ -487,7 +523,7 @@ function SessionCard({ sd, sess, onSave }) {
           {dirty && (
             <div className="flex gap-2 mt-3">
               <button onClick={() => onSave(sd.number, { session_date: date || null, homework: homework || null })}
-                className={btnPrimary} style={{ background: '#10b981', color: '#fff' }}>Salvar</button>
+                className={btnPrimary} style={{ background: '#c9932a', color: '#0a1e38' }}>Salvar</button>
               <button onClick={() => { setDate(sess && sess.session_date ? sess.session_date : ''); setHomework(sess && sess.homework ? sess.homework : '') }} className={btnGhost}>Cancelar</button>
             </div>
           )}
@@ -507,7 +543,7 @@ function MeetingForm({ initial, sessions, onSave, onCancel, saveLabel }) {
   const [form, setForm] = useState(initial)
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }))
   return (
-    <div className="rounded-xl p-4 space-y-3" style={{ ...CARD, borderColor: 'rgba(16,185,129,.4)' }}>
+    <div className="rounded-xl p-4 space-y-3" style={{ ...CARD, borderColor: 'rgba(201,147,42,.4)' }}>
       <input placeholder="Título (ex: Sessão 4 — Conteúdo)" value={form.title} onChange={e => set('title', e.target.value)} className={inp} style={INP} />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
@@ -527,8 +563,8 @@ function MeetingForm({ initial, sessions, onSave, onCancel, saveLabel }) {
         {sessions.map(s => <option key={s.id} value={s.id}>Sessão {s.session_number} — {s.title}</option>)}
       </select>
       <div className="flex gap-2 pt-1">
-        <button onClick={async () => { if (await onSave(form)) onCancel() }} className={btnPrimary} style={{ background: '#10b981', color: '#fff' }}>{saveLabel}</button>
-        <button onClick={onCancel} className={btnGhost} style={{ border: '1px solid #334155' }}>Cancelar</button>
+        <button onClick={async () => { if (await onSave(form)) onCancel() }} className={btnPrimary} style={{ background: '#c9932a', color: '#0a1e38' }}>{saveLabel}</button>
+        <button onClick={onCancel} className={btnGhost} style={{ border: '1px solid rgba(201,147,42,.25)' }}>Cancelar</button>
       </div>
     </div>
   )
@@ -544,7 +580,7 @@ function MeetingsTab({ meetings, sessions, onSave, onDelete }) {
         ? <MeetingForm initial={emptyMeeting()} sessions={sessions} saveLabel="Criar reunião" onSave={f => onSave(f, null)} onCancel={() => setAdding(false)} />
         : (
           <button onClick={() => setAdding(true)} className="w-full py-2.5 rounded-xl text-sm font-medium transition"
-            style={{ background: 'rgba(16,185,129,.15)', color: '#10b981', border: '1px dashed rgba(16,185,129,.4)' }}>
+            style={{ background: 'rgba(201,147,42,.15)', color: '#c9932a', border: '1px dashed rgba(201,147,42,.4)' }}>
             + Adicionar reunião
           </button>
         )}
@@ -567,17 +603,17 @@ function MeetingsTab({ meetings, sessions, onSave, onDelete }) {
                 {d ? `${formatWeekday(m.scheduled_at)}, ${formatDate(m.scheduled_at)} às ${formatTime(m.scheduled_at)}` : 'sem data'}
                 {isPast && m.status !== 'completed' ? ' · já passou' : ''}
               </p>
-              {m.meet_link && <a href={m.meet_link} target="_blank" rel="noreferrer" className="text-xs text-emerald-400 mt-1 block">Link da sala ↗</a>}
+              {m.meet_link && <a href={m.meet_link} target="_blank" rel="noreferrer" className="text-xs text-[#e8b04a] mt-1 block">Link da sala ↗</a>}
             </div>
             <span className={`text-xs px-2.5 py-1 rounded-full border ${
-              m.status === 'next' ? 'text-amber-300 border-amber-700 bg-amber-900/30'
-              : m.status === 'completed' ? 'text-emerald-400 border-emerald-700 bg-emerald-900/30'
+              m.status === 'next' ? 'text-[#0a1e38] border-[#c9932a] bg-[#c9932a]'
+              : m.status === 'completed' ? 'text-[#e8b04a] border-[rgba(201,147,42,.5)] bg-[rgba(201,147,42,.15)]'
               : m.status === 'cancelled' ? 'text-red-300 border-red-800 bg-red-900/20'
-              : 'text-slate-300 border-slate-600 bg-slate-800'}`}>
+              : 'text-slate-300 border-[rgba(255,255,255,.2)] bg-[rgba(255,255,255,.06)]'}`}>
               {labelOf(MEETING_STATUS, m.status)}
             </span>
             <div className="flex gap-2">
-              <button onClick={() => { setAdding(false); setEditing(m.id) }} className={btnGhost} style={{ border: '1px solid #334155' }}>Editar</button>
+              <button onClick={() => { setAdding(false); setEditing(m.id) }} className={btnGhost} style={{ border: '1px solid rgba(201,147,42,.25)' }}>Editar</button>
               <button onClick={() => onDelete(m)} className="text-xs px-3 py-2 rounded-lg text-red-400 hover:text-red-300" style={{ border: '1px solid rgba(239,68,68,.3)' }}>Excluir</button>
             </div>
           </div>
@@ -595,7 +631,7 @@ function GoalForm({ initial, onSave, onCancel, saveLabel }) {
   const [form, setForm] = useState(initial)
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }))
   return (
-    <div className="rounded-xl p-4 space-y-3" style={{ ...CARD, borderColor: 'rgba(16,185,129,.4)' }}>
+    <div className="rounded-xl p-4 space-y-3" style={{ ...CARD, borderColor: 'rgba(201,147,42,.4)' }}>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <input placeholder="Período (ex: Abr 2026)" value={form.period} onChange={e => set('period', e.target.value)} className={inp} style={INP} />
         <select value={form.status} onChange={e => set('status', e.target.value)} className={inp + ' text-slate-300'} style={INP}>
@@ -605,8 +641,8 @@ function GoalForm({ initial, onSave, onCancel, saveLabel }) {
       <input placeholder="Título da meta" value={form.title} onChange={e => set('title', e.target.value)} className={inp} style={INP} />
       <textarea placeholder="Descrição (opcional) — quebras de linha são preservadas no portal" value={form.detail} onChange={e => set('detail', e.target.value)} rows={3} className={inp} style={{ ...INP, resize: 'vertical' }} />
       <div className="flex gap-2">
-        <button onClick={async () => { if (await onSave(form)) onCancel() }} className={btnPrimary} style={{ background: '#10b981', color: '#fff' }}>{saveLabel}</button>
-        <button onClick={onCancel} className={btnGhost} style={{ border: '1px solid #334155' }}>Cancelar</button>
+        <button onClick={async () => { if (await onSave(form)) onCancel() }} className={btnPrimary} style={{ background: '#c9932a', color: '#0a1e38' }}>{saveLabel}</button>
+        <button onClick={onCancel} className={btnGhost} style={{ border: '1px solid rgba(201,147,42,.25)' }}>Cancelar</button>
       </div>
     </div>
   )
@@ -621,7 +657,7 @@ function GoalsTab({ goals, onSave, onDelete, onMove }) {
         ? <GoalForm initial={emptyGoal()} saveLabel="Salvar meta" onSave={f => onSave(f, null)} onCancel={() => setAdding(false)} />
         : (
           <button onClick={() => setAdding(true)} className="w-full py-2.5 rounded-xl text-sm font-medium transition"
-            style={{ background: 'rgba(16,185,129,.15)', color: '#10b981', border: '1px dashed rgba(16,185,129,.4)' }}>
+            style={{ background: 'rgba(201,147,42,.15)', color: '#c9932a', border: '1px dashed rgba(201,147,42,.4)' }}>
             + Adicionar meta
           </button>
         )}
@@ -640,13 +676,13 @@ function GoalsTab({ goals, onSave, onDelete, onMove }) {
               {g.detail && <p className="text-xs text-slate-500 mt-1 whitespace-pre-wrap">{g.detail}</p>}
             </div>
             <span className={`text-xs px-2.5 py-1 rounded-full border ${
-              g.status === 'completed' ? 'text-emerald-400 border-emerald-700 bg-emerald-900/30'
-              : g.status === 'current' ? 'text-sky-400 border-sky-700 bg-sky-900/30'
-              : 'text-slate-400 border-slate-600 bg-slate-800'}`}>
+              g.status === 'completed' ? 'text-[#e8b04a] border-[rgba(201,147,42,.5)] bg-[rgba(201,147,42,.15)]'
+              : g.status === 'current' ? 'text-[#0a1e38] border-[#c9932a] bg-[#c9932a]'
+              : 'text-slate-400 border-[rgba(255,255,255,.2)] bg-[rgba(255,255,255,.06)]'}`}>
               {labelOf(ITEM_STATUS, g.status)}
             </span>
             <div className="flex gap-2">
-              <button onClick={() => { setAdding(false); setEditing(g.id) }} className={btnGhost} style={{ border: '1px solid #334155' }}>Editar</button>
+              <button onClick={() => { setAdding(false); setEditing(g.id) }} className={btnGhost} style={{ border: '1px solid rgba(201,147,42,.25)' }}>Editar</button>
               <button onClick={() => onDelete(g)} className="text-xs px-3 py-2 rounded-lg text-red-400 hover:text-red-300" style={{ border: '1px solid rgba(239,68,68,.3)' }}>Excluir</button>
             </div>
           </div>
@@ -689,7 +725,7 @@ function ProfileForm({ profile, busy, onSave }) {
       <Field label="Link da pasta no Google Drive" k="drive_folder_url" placeholder="https://drive.google.com/drive/folders/..." />
       <Field label="URL da foto (opcional)" k="photo_url" placeholder="https://..." />
       <div className="flex items-center gap-3 pt-1">
-        <button onClick={() => onSave(form)} disabled={busy} className={btnPrimary} style={{ background: '#10b981', color: '#fff', opacity: busy ? .6 : 1 }}>Salvar perfil</button>
+        <button onClick={() => onSave(form)} disabled={busy} className={btnPrimary} style={{ background: '#c9932a', color: '#0a1e38', opacity: busy ? .6 : 1 }}>Salvar perfil</button>
         <span className="text-xs text-slate-600">As alterações aparecem na hora no portal do mentorado.</span>
       </div>
     </div>
@@ -702,6 +738,127 @@ function ProfileField({ label, type, placeholder, value, onChange }) {
     <div>
       <p className="text-xs text-slate-500 mb-1">{label}</p>
       <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} className={inp} style={INP} />
+    </div>
+  )
+}
+
+
+/* ═══════════════ Senha ═══════════════ */
+function generatePassword() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789'
+  let out = ''
+  const arr = new Uint32Array(12)
+  window.crypto.getRandomValues(arr)
+  for (let i = 0; i < 12; i++) out += chars[arr[i] % chars.length]
+  return out
+}
+
+function PasswordReset({ onReset }) {
+  const [pw, setPw] = useState('')
+  const [done, setDone] = useState('')
+  return (
+    <div className="rounded-xl p-5 space-y-3 max-w-2xl" style={CARD}>
+      <p className="text-sm font-medium text-white">Redefinir senha do mentorado</p>
+      <p className="text-xs text-slate-500">Defina uma senha nova e envie para o mentorado. A senha atual deixa de valer na hora.</p>
+      <div className="flex flex-col sm:flex-row gap-2">
+        <input value={pw} onChange={e => { setPw(e.target.value); setDone('') }} placeholder="Nova senha (mín. 8 caracteres)" className={inp} style={INP} />
+        <button onClick={() => { setPw(generatePassword()); setDone('') }} className={btnGhost} style={{ border: '1px solid rgba(201,147,42,.25)', whiteSpace: 'nowrap' }}>Gerar</button>
+        <button onClick={async () => { if (await onReset(pw)) setDone(pw) }} disabled={pw.length < 8}
+          className={btnPrimary} style={{ background: '#c9932a', color: '#0a1e38', opacity: pw.length < 8 ? .5 : 1, whiteSpace: 'nowrap' }}>
+          Redefinir senha
+        </button>
+      </div>
+      {done && (
+        <div className="rounded-lg p-3 text-xs" style={{ background: '#071526', border: '1px solid rgba(201,147,42,.4)' }}>
+          <p className="text-slate-400">Senha nova (envie ao mentorado):</p>
+          <p className="text-[#e8b04a] font-mono text-sm mt-1 select-all">{done}</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ═══════════════ Novo mentorado ═══════════════ */
+function NewMenteeModal({ onCreate, onClose }) {
+  const [form, setForm] = useState({
+    full_name: '', email: '', password: generatePassword(), specialty: '', city: '', whatsapp: '',
+    start_date: '', investment: '7000', drive_folder_url: '',
+  })
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [created, setCreated] = useState(null)
+  const set = (k, v) => setForm(p => ({ ...p, [k]: v }))
+  const canSubmit = form.full_name.trim().length >= 2 && /\S+@\S+\.\S+/.test(form.email) && form.password.length >= 8
+
+  async function submit() {
+    setSaving(true); setError('')
+    const res = await onCreate(form)
+    setSaving(false)
+    if (res.error) return setError(res.error)
+    setCreated({ email: form.email.trim().toLowerCase(), password: form.password, name: form.full_name.trim() })
+  }
+
+  const portalUrl = typeof window !== 'undefined' ? window.location.origin : ''
+  const message = created
+    ? `Olá, ${created.name.split(' ')[0]}! Seu acesso ao Portal da Mentoria:\n\nLink: ${portalUrl}\nE-mail: ${created.email}\nSenha: ${created.password}\n\nQualquer dúvida, fale com a Paola.`
+    : ''
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ background: 'rgba(0,0,0,.7)' }} onClick={onClose}>
+      <div className="w-full max-w-lg rounded-2xl p-6 space-y-4 max-h-[92vh] overflow-y-auto" style={CARD} onClick={e => e.stopPropagation()}>
+        {!created ? (
+          <>
+            <div>
+              <h3 className="text-base font-semibold text-white">Novo mentorado</h3>
+              <p className="text-xs text-slate-500 mt-1">Cria o login de acesso e o perfil no portal. Você recebe o e-mail e a senha prontos para enviar.</p>
+            </div>
+            <div className="space-y-3">
+              <ProfileField label="Nome completo *" type="text" value={form.full_name} onChange={v => set('full_name', v)} placeholder="Ex: Maria Silva" />
+              <ProfileField label="E-mail de acesso *" type="email" value={form.email} onChange={v => set('email', v)} placeholder="email@exemplo.com" />
+              <div>
+                <p className="text-xs text-slate-500 mb-1">Senha inicial * (mín. 8 caracteres)</p>
+                <div className="flex gap-2">
+                  <input value={form.password} onChange={e => set('password', e.target.value)} className={inp + ' font-mono'} style={INP} />
+                  <button onClick={() => set('password', generatePassword())} className={btnGhost} style={{ border: '1px solid rgba(201,147,42,.25)', whiteSpace: 'nowrap' }}>Gerar</button>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <ProfileField label="Especialidade" type="text" value={form.specialty} onChange={v => set('specialty', v)} placeholder="Ex: Fisioterapeuta" />
+                <ProfileField label="Cidade" type="text" value={form.city} onChange={v => set('city', v)} placeholder="Ex: Campo Grande, MS" />
+                <ProfileField label="WhatsApp" type="text" value={form.whatsapp} onChange={v => set('whatsapp', v)} placeholder="67 99999-9999" />
+                <ProfileField label="Data de início" type="date" value={form.start_date} onChange={v => set('start_date', v)} />
+                <ProfileField label="Investimento (R$)" type="number" value={form.investment} onChange={v => set('investment', v)} placeholder="7000" />
+                <ProfileField label="Pasta do Drive" type="text" value={form.drive_folder_url} onChange={v => set('drive_folder_url', v)} placeholder="https://drive.google.com/..." />
+              </div>
+            </div>
+            {error && <div className="rounded-lg px-3 py-2 text-xs" style={{ background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.3)', color: '#fca5a5' }}>{error}</div>}
+            <div className="flex gap-3 pt-1">
+              <button onClick={submit} disabled={!canSubmit || saving} className="flex-1 py-2.5 rounded-xl text-sm font-medium" style={{ background: '#c9932a', color: '#0a1e38', opacity: (!canSubmit || saving) ? .5 : 1 }}>
+                {saving ? 'Cadastrando...' : 'Cadastrar mentorado'}
+              </button>
+              <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm text-slate-400 hover:text-white transition" style={{ border: '1px solid rgba(201,147,42,.25)' }}>Cancelar</button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div>
+              <h3 className="text-base font-semibold text-white">{created.name} cadastrado(a) ✓</h3>
+              <p className="text-xs text-slate-500 mt-1">Envie estes dados de acesso. A senha não fica visível depois; se perder, redefina na aba Perfil.</p>
+            </div>
+            <div className="rounded-lg p-4 space-y-1 text-sm" style={{ background: '#071526', border: '1px solid rgba(201,147,42,.4)' }}>
+              <p className="text-slate-400 text-xs">Link</p><p className="text-white select-all">{portalUrl}</p>
+              <p className="text-slate-400 text-xs pt-2">E-mail</p><p className="text-white select-all">{created.email}</p>
+              <p className="text-slate-400 text-xs pt-2">Senha</p><p className="text-[#e8b04a] font-mono select-all">{created.password}</p>
+            </div>
+            <textarea readOnly value={message} rows={6} className={inp + ' text-xs'} style={{ ...INP, resize: 'none' }} onFocus={e => e.target.select()} />
+            <div className="flex gap-3">
+              <button onClick={() => { navigator.clipboard && navigator.clipboard.writeText(message) }} className="flex-1 py-2.5 rounded-xl text-sm font-medium" style={{ background: '#c9932a', color: '#0a1e38' }}>Copiar mensagem</button>
+              <a href={'https://wa.me/?text=' + encodeURIComponent(message)} target="_blank" rel="noreferrer" className="flex-1 py-2.5 rounded-xl text-sm text-center text-slate-200" style={{ border: '1px solid rgba(201,147,42,.25)' }}>Enviar no WhatsApp</a>
+              <button onClick={onClose} className="py-2.5 px-4 rounded-xl text-sm text-slate-400 hover:text-white" style={{ border: '1px solid rgba(201,147,42,.25)' }}>Fechar</button>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   )
 }

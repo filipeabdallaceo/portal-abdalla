@@ -17,5 +17,7 @@ export async function middleware(req) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|public).*)'],
+  // Ignora assets estáticos (ex.: /logo.png) — sem isso a logo da tela de
+  // login era redirecionada para /login e não carregava.
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)'],
 }

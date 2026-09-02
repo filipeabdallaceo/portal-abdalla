@@ -7,11 +7,11 @@ import {
 } from '../../lib/supabase'
 import { LOGO_B64 } from '../../lib/logo'
 
-const CARD = { background: '#112d54', border: '1px solid rgba(201,147,42,.25)' }
-const INP = { background: '#071526', border: '1px solid rgba(201,147,42,.25)' }
-const inp = 'w-full text-sm px-3 py-2 rounded-lg text-white outline-none placeholder-slate-600'
+const CARD = { background: '#ffffff', border: '1px solid #e5e1d8', boxShadow: '0 1px 2px rgba(10,30,56,.04)' }
+const INP = { background: '#fbfaf7', border: '1px solid #d9d4c7' }
+const inp = 'w-full text-sm px-3 py-2 rounded-lg text-[#0a1e38] outline-none placeholder-slate-400'
 const btnPrimary = 'text-xs px-4 py-2 rounded-lg font-medium'
-const btnGhost = 'text-xs px-3 py-2 rounded-lg text-slate-400 hover:text-white transition'
+const btnGhost = 'text-xs px-3 py-2 rounded-lg text-slate-400 hover:text-[#0a1e38] transition'
 const TABS = ['Sessões', 'Reuniões', 'Metas', 'Arquivos', 'Perfil']
 const MAX_UPLOAD_MB = 50
 
@@ -290,7 +290,7 @@ export default function AdminPage() {
   }
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: '#0a1e38' }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ background: '#f5f3ee' }}>
       <p className="text-slate-500 animate-pulse text-sm">Carregando painel...</p>
     </div>
   )
@@ -298,42 +298,42 @@ export default function AdminPage() {
   const doneCount = sessions.filter(s => s.status === 'completed').length
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row" style={{ background: '#0a1e38' }}>
+    <div className="min-h-screen flex flex-col md:flex-row" style={{ background: '#f5f3ee', color: '#0a1e38' }}>
       {/* ─ SIDEBAR MENTORADOS ─ */}
-      <aside className="w-full md:w-72 flex-shrink-0 border-b md:border-b-0 md:border-r border-[#1c3560] flex flex-col md:h-screen md:sticky md:top-0">
-        <div className="p-5 border-b border-[#1c3560] flex items-center justify-between">
+      <aside className="w-full md:w-72 flex-shrink-0 border-b md:border-b-0 md:border-r border-[#e5e1d8] flex flex-col md:h-screen md:sticky md:top-0" style={{ background: '#ffffff' }}>
+        <div className="p-5 border-b border-[#e5e1d8] flex items-center justify-between">
           <div>
-            <img src={LOGO_B64} alt="Filipe Abdalla" style={{ height: 30, filter: 'brightness(0) invert(1)', marginBottom: 6 }} />
-            <p className="text-sm font-semibold text-white">Painel Admin</p>
+            <img src={LOGO_B64} alt="Filipe Abdalla" style={{ height: 30, filter: 'brightness(0)', marginBottom: 6 }} />
+            <p className="text-sm font-semibold text-[#0a1e38]">Painel Admin</p>
             <p className="text-xs text-slate-500">{me ? me.full_name : 'Gestão de Mentorados'}</p>
           </div>
-          <button onClick={handleLogout} className="md:hidden text-xs text-slate-500 hover:text-white">Sair</button>
+          <button onClick={handleLogout} className="md:hidden text-xs text-slate-500 hover:text-[#0a1e38]">Sair</button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-3 space-y-1 max-h-72 md:max-h-none">
           <button onClick={() => setNewMentee(true)}
             className="w-full py-2 rounded-xl text-sm font-medium transition mb-2"
-            style={{ background: 'rgba(201,147,42,.15)', color: '#c9932a', border: '1px dashed rgba(201,147,42,.4)' }}>
+            style={{ background: 'rgba(201,147,42,.15)', color: '#8a6316', border: '1px dashed rgba(201,147,42,.4)' }}>
             + Novo mentorado
           </button>
           <p className="text-xs text-slate-600 px-2 py-1 font-medium">Mentorados ativos ({mentees.length})</p>
           {mentees.map(m => (
             <button key={m.id} onClick={() => selectMentee(m)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition ${selected && selected.id === m.id ? 'bg-[rgba(201,147,42,.12)] border border-[rgba(201,147,42,.4)]' : 'hover:bg-[#112d54]'}`}>
-              <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 text-[#e8b04a]"
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition ${selected && selected.id === m.id ? 'bg-[rgba(201,147,42,.12)] border border-[rgba(201,147,42,.4)]' : 'hover:bg-[#f1eee6]'}`}>
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 text-[#8a6316]"
                    style={{ background: 'rgba(201,147,42,.1)', border: '1px solid rgba(201,147,42,.2)' }}>
                 {getInitials(m.full_name)}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white truncate">{m.full_name}</p>
+                <p className="text-sm font-medium text-[#0a1e38] truncate">{m.full_name}</p>
                 <p className="text-xs text-slate-500 truncate">{completedFor(m)}/{TOTAL_SESSIONS} sessões · {m.city || m.email}</p>
               </div>
             </button>
           ))}
         </div>
 
-        <div className="hidden md:block p-3 border-t border-[#1c3560]">
-          <button onClick={handleLogout} className="w-full text-xs text-slate-500 hover:text-white py-2 transition">Sair</button>
+        <div className="hidden md:block p-3 border-t border-[#e5e1d8]">
+          <button onClick={handleLogout} className="w-full text-xs text-slate-500 hover:text-[#0a1e38] py-2 transition">Sair</button>
         </div>
       </aside>
 
@@ -344,7 +344,7 @@ export default function AdminPage() {
             <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ background: 'rgba(201,147,42,.1)', border: '1px solid rgba(201,147,42,.2)' }}>
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c9932a" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
             </div>
-            <p className="text-white font-medium">Selecione um mentorado</p>
+            <p className="text-[#0a1e38] font-medium">Selecione um mentorado</p>
             <p className="text-sm text-slate-500 mt-1">Escolha na lista para editar sessões, reuniões, metas, arquivos e perfil</p>
             <div className="grid grid-cols-3 gap-4 mt-10 w-full max-w-lg">
               {(() => {
@@ -356,7 +356,7 @@ export default function AdminPage() {
                   { label: 'Progresso médio', value: taxaMedia + '%' },
                 ].map(c => (
                   <div key={c.label} className="rounded-xl p-4 text-center" style={CARD}>
-                    <p className="text-2xl font-semibold text-white">{c.value}</p>
+                    <p className="text-2xl font-semibold text-[#0a1e38]">{c.value}</p>
                     <p className="text-xs text-slate-500 mt-1">{c.label}</p>
                   </div>
                 ))
@@ -369,20 +369,20 @@ export default function AdminPage() {
         ) : (
           <>
             {/* Header do mentorado */}
-            <div className="flex flex-wrap items-center gap-4 p-5 border-b border-[#1c3560]">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold text-[#e8b04a] flex-shrink-0"
+            <div className="flex flex-wrap items-center gap-4 p-5 border-b border-[#e5e1d8]">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold text-[#8a6316] flex-shrink-0"
                    style={{ background: 'rgba(201,147,42,.1)', border: '1px solid rgba(201,147,42,.2)' }}>
                 {getInitials(selected.full_name)}
               </div>
               <div className="flex-1 min-w-[200px]">
-                <h2 className="text-base font-semibold text-white">{selected.full_name}</h2>
+                <h2 className="text-base font-semibold text-[#0a1e38]">{selected.full_name}</h2>
                 <p className="text-xs text-slate-500">
                   {selected.email}{selected.start_date ? ' · Início: ' + formatDate(selected.start_date) : ''}
-                  {selected.drive_folder_url && <> · <a href={selected.drive_folder_url} target="_blank" rel="noreferrer" style={{ color: '#e8b04a' }}>Pasta do Drive ↗</a></>}
+                  {selected.drive_folder_url && <> · <a href={selected.drive_folder_url} target="_blank" rel="noreferrer" style={{ color: '#8a6316' }}>Pasta do Drive ↗</a></>}
                 </p>
               </div>
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs" style={CARD}>
-                <div className="w-16 h-1 rounded-full bg-[rgba(255,255,255,.1)] overflow-hidden">
+                <div className="w-16 h-1 rounded-full bg-[rgba(10,30,56,.1)] overflow-hidden">
                   <div className="h-full rounded-full bg-[#c9932a]" style={{ width: `${(doneCount / TOTAL_SESSIONS) * 100}%` }}/>
                 </div>
                 <span className="text-slate-400">{doneCount}/{TOTAL_SESSIONS}</span>
@@ -391,10 +391,10 @@ export default function AdminPage() {
             </div>
 
             {/* Sub-tabs */}
-            <div className="flex border-b border-[#1c3560] px-5 overflow-x-auto">
+            <div className="flex border-b border-[#e5e1d8] px-5 overflow-x-auto">
               {TABS.map(t => (
                 <button key={t} onClick={() => setTab(t)}
-                  className={`py-3 px-4 text-sm transition border-b-2 whitespace-nowrap ${tab === t ? 'text-[#e8b04a] border-[#c9932a]' : 'text-slate-500 border-transparent hover:text-white'}`}>
+                  className={`py-3 px-4 text-sm transition border-b-2 whitespace-nowrap ${tab === t ? 'text-[#8a6316] border-[#c9932a]' : 'text-slate-500 border-transparent hover:text-[#0a1e38]'}`}>
                   {t}{t === 'Arquivos' && files.length > 0 ? ` (${files.length})` : ''}
                 </button>
               ))}
@@ -424,22 +424,22 @@ export default function AdminPage() {
                     className="rounded-xl p-6 text-center cursor-pointer"
                     style={{ border: '1px dashed rgba(201,147,42,.4)', background: 'rgba(201,147,42,.05)' }}>
                     <input ref={fileRef} type="file" className="hidden" onChange={e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; uploadFile(f) }} />
-                    <p className="text-sm font-medium" style={{ color: '#c9932a' }}>{uploading ? 'Enviando...' : `+ Enviar arquivo para ${selected.full_name.split(' ')[0]}`}</p>
+                    <p className="text-sm font-medium" style={{ color: '#8a6316' }}>{uploading ? 'Enviando...' : `+ Enviar arquivo para ${selected.full_name.split(' ')[0]}`}</p>
                     <p className="text-xs text-slate-500 mt-1">O mentorado vê o arquivo na aba Arquivos do portal · até {MAX_UPLOAD_MB} MB</p>
                   </div>
                   {files.length === 0 ? (
                     <p className="text-sm text-slate-600 text-center py-8">Nenhum arquivo ainda.</p>
                   ) : files.map(f => (
                     <div key={f.id} className="flex items-center gap-3 p-3 rounded-xl" style={CARD}>
-                      <span className="text-xs font-semibold px-1.5 py-0.5 rounded bg-[rgba(201,147,42,.15)] text-[#e8b04a] flex-shrink-0">
+                      <span className="text-xs font-semibold px-1.5 py-0.5 rounded bg-[rgba(201,147,42,.15)] text-[#8a6316] flex-shrink-0">
                         {((f.name || '').includes('.') ? f.name.split('.').pop() : 'ARQ').toUpperCase().slice(0, 5)}
                       </span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-slate-200 truncate">{f.name}</p>
+                        <p className="text-sm text-slate-700 truncate">{f.name}</p>
                         <p className="text-xs text-slate-500">{fmtBytes(f.size)} · {formatDate(f.created_at)} · {f.uploaded_by === selected.id ? 'enviado pelo mentorado' : 'enviado por você'}</p>
                       </div>
                       <button onClick={() => downloadFile(f)} className={btnGhost} style={{ border: '1px solid rgba(201,147,42,.25)' }}>Baixar</button>
-                      <button onClick={() => deleteFile(f)} className="text-xs px-3 py-2 rounded-lg text-red-400 hover:text-red-300" style={{ border: '1px solid rgba(239,68,68,.3)' }}>Excluir</button>
+                      <button onClick={() => deleteFile(f)} className="text-xs px-3 py-2 rounded-lg text-red-600 hover:text-red-700" style={{ border: '1px solid rgba(239,68,68,.3)' }}>Excluir</button>
                     </div>
                   ))}
                 </>
@@ -462,8 +462,8 @@ export default function AdminPage() {
       {toast && (
         <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl text-sm shadow-lg"
           style={toast.type === 'error'
-            ? { background: '#3f1d1d', color: '#fca5a5', border: '1px solid rgba(239,68,68,.4)' }
-            : { background: '#112d54', color: '#e8b04a', border: '1px solid rgba(201,147,42,.5)' }}>
+            ? { background: '#fdecec', color: '#b42318', border: '1px solid rgba(239,68,68,.35)' }
+            : { background: '#ffffff', color: '#0a1e38', border: '1px solid rgba(201,147,42,.6)' }}>
           {toast.text}
         </div>
       )}
@@ -486,20 +486,20 @@ function SessionCard({ sd, sess, onSave }) {
     <div className="rounded-xl p-4" style={CARD}>
       <div className="flex items-start gap-4">
         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 ${
-          status === 'completed' ? 'bg-[rgba(201,147,42,.15)] text-[#e8b04a]' : status === 'current' ? 'bg-[#c9932a] text-[#0a1e38]' : 'bg-[rgba(255,255,255,.05)] text-slate-500'}`}>
+          status === 'completed' ? 'bg-[rgba(201,147,42,.15)] text-[#8a6316]' : status === 'current' ? 'bg-[#c9932a] text-[#0a1e38]' : 'bg-[rgba(10,30,56,.05)] text-slate-500'}`}>
           {sd.number}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-white">{sd.title}</p>
+          <p className="text-sm font-medium text-[#0a1e38]">{sd.title}</p>
           <p className="text-xs text-slate-500 mt-0.5 mb-3">{sd.desc}</p>
           <div className="flex gap-2 flex-wrap">
             {ITEM_STATUS.map(([s, label]) => (
               <button key={s} onClick={() => onSave(sd.number, { status: s })}
                 className={`text-xs px-3 py-1 rounded-full transition border ${status === s
-                  ? s === 'completed' ? 'bg-[rgba(201,147,42,.15)] text-[#e8b04a] border-[rgba(201,147,42,.5)]'
+                  ? s === 'completed' ? 'bg-[rgba(201,147,42,.15)] text-[#8a6316] border-[rgba(201,147,42,.5)]'
                     : s === 'current' ? 'bg-[#c9932a] text-[#0a1e38] border-[#c9932a]'
-                    : 'bg-[rgba(255,255,255,.08)] text-slate-200 border-[rgba(255,255,255,.2)]'
-                  : 'text-slate-600 border-slate-700 hover:text-slate-400'}`}>
+                    : 'bg-[rgba(10,30,56,.08)] text-slate-700 border-[rgba(10,30,56,.18)]'
+                  : 'text-slate-400 border-[#d9d4c7] hover:text-slate-600'}`}>
                 {label}
               </button>
             ))}
@@ -515,9 +515,9 @@ function SessionCard({ sd, sess, onSave }) {
             </div>
           </div>
           {sess && sess.notes && (
-            <div className="mt-3 rounded-lg p-3" style={{ background: '#071526', borderLeft: '3px solid #c9932a' }}>
+            <div className="mt-3 rounded-lg p-3" style={{ background: '#f7f5f0', borderLeft: '3px solid #c9932a' }}>
               <p className="text-xs text-slate-500 mb-1">Anotações do mentorado</p>
-              <p className="text-xs text-slate-300 whitespace-pre-wrap">{sess.notes}</p>
+              <p className="text-xs text-slate-700 whitespace-pre-wrap">{sess.notes}</p>
             </div>
           )}
           {dirty && (
@@ -552,13 +552,13 @@ function MeetingForm({ initial, sessions, onSave, onCancel, saveLabel }) {
         </div>
         <div>
           <p className="text-xs text-slate-600 mb-1">Status</p>
-          <select value={form.status} onChange={e => set('status', e.target.value)} className={inp + ' text-slate-300'} style={INP}>
+          <select value={form.status} onChange={e => set('status', e.target.value)} className={inp + ' text-slate-700'} style={INP}>
             {MEETING_STATUS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
         </div>
       </div>
       <input placeholder="Link do Google Meet / Zoom (opcional)" value={form.meet_link} onChange={e => set('meet_link', e.target.value)} className={inp} style={INP} />
-      <select value={form.session_id} onChange={e => set('session_id', e.target.value)} className={inp + ' text-slate-300'} style={INP}>
+      <select value={form.session_id} onChange={e => set('session_id', e.target.value)} className={inp + ' text-slate-700'} style={INP}>
         <option value="">Vincular a uma sessão (opcional)</option>
         {sessions.map(s => <option key={s.id} value={s.id}>Sessão {s.session_number} — {s.title}</option>)}
       </select>
@@ -580,7 +580,7 @@ function MeetingsTab({ meetings, sessions, onSave, onDelete }) {
         ? <MeetingForm initial={emptyMeeting()} sessions={sessions} saveLabel="Criar reunião" onSave={f => onSave(f, null)} onCancel={() => setAdding(false)} />
         : (
           <button onClick={() => setAdding(true)} className="w-full py-2.5 rounded-xl text-sm font-medium transition"
-            style={{ background: 'rgba(201,147,42,.15)', color: '#c9932a', border: '1px dashed rgba(201,147,42,.4)' }}>
+            style={{ background: 'rgba(201,147,42,.15)', color: '#8a6316', border: '1px dashed rgba(201,147,42,.4)' }}>
             + Adicionar reunião
           </button>
         )}
@@ -594,27 +594,27 @@ function MeetingsTab({ meetings, sessions, onSave, onDelete }) {
         return (
           <div key={m.id} className="rounded-xl p-4 flex flex-wrap items-center gap-4" style={{ ...CARD, opacity: m.status === 'cancelled' ? .6 : 1 }}>
             <div className="text-center min-w-[44px]">
-              <p className="text-xl font-semibold text-white">{d ? String(d.getDate()).padStart(2, '0') : '—'}</p>
+              <p className="text-xl font-semibold text-[#0a1e38]">{d ? String(d.getDate()).padStart(2, '0') : '—'}</p>
               <p className="text-xs text-slate-500 uppercase">{d ? d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '') : ''}</p>
             </div>
             <div className="flex-1 min-w-[180px]">
-              <p className="text-sm font-medium text-white">{m.title}</p>
+              <p className="text-sm font-medium text-[#0a1e38]">{m.title}</p>
               <p className="text-xs text-slate-500">
                 {d ? `${formatWeekday(m.scheduled_at)}, ${formatDate(m.scheduled_at)} às ${formatTime(m.scheduled_at)}` : 'sem data'}
                 {isPast && m.status !== 'completed' ? ' · já passou' : ''}
               </p>
-              {m.meet_link && <a href={m.meet_link} target="_blank" rel="noreferrer" className="text-xs text-[#e8b04a] mt-1 block">Link da sala ↗</a>}
+              {m.meet_link && <a href={m.meet_link} target="_blank" rel="noreferrer" className="text-xs text-[#8a6316] mt-1 block">Link da sala ↗</a>}
             </div>
             <span className={`text-xs px-2.5 py-1 rounded-full border ${
               m.status === 'next' ? 'text-[#0a1e38] border-[#c9932a] bg-[#c9932a]'
-              : m.status === 'completed' ? 'text-[#e8b04a] border-[rgba(201,147,42,.5)] bg-[rgba(201,147,42,.15)]'
+              : m.status === 'completed' ? 'text-[#8a6316] border-[rgba(201,147,42,.5)] bg-[rgba(201,147,42,.15)]'
               : m.status === 'cancelled' ? 'text-red-300 border-red-800 bg-red-900/20'
-              : 'text-slate-300 border-[rgba(255,255,255,.2)] bg-[rgba(255,255,255,.06)]'}`}>
+              : 'text-slate-700 border-[rgba(10,30,56,.18)] bg-[rgba(10,30,56,.06)]'}`}>
               {labelOf(MEETING_STATUS, m.status)}
             </span>
             <div className="flex gap-2">
               <button onClick={() => { setAdding(false); setEditing(m.id) }} className={btnGhost} style={{ border: '1px solid rgba(201,147,42,.25)' }}>Editar</button>
-              <button onClick={() => onDelete(m)} className="text-xs px-3 py-2 rounded-lg text-red-400 hover:text-red-300" style={{ border: '1px solid rgba(239,68,68,.3)' }}>Excluir</button>
+              <button onClick={() => onDelete(m)} className="text-xs px-3 py-2 rounded-lg text-red-600 hover:text-red-700" style={{ border: '1px solid rgba(239,68,68,.3)' }}>Excluir</button>
             </div>
           </div>
         )
@@ -634,7 +634,7 @@ function GoalForm({ initial, onSave, onCancel, saveLabel }) {
     <div className="rounded-xl p-4 space-y-3" style={{ ...CARD, borderColor: 'rgba(201,147,42,.4)' }}>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <input placeholder="Período (ex: Abr 2026)" value={form.period} onChange={e => set('period', e.target.value)} className={inp} style={INP} />
-        <select value={form.status} onChange={e => set('status', e.target.value)} className={inp + ' text-slate-300'} style={INP}>
+        <select value={form.status} onChange={e => set('status', e.target.value)} className={inp + ' text-slate-700'} style={INP}>
           {ITEM_STATUS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
       </div>
@@ -657,7 +657,7 @@ function GoalsTab({ goals, onSave, onDelete, onMove }) {
         ? <GoalForm initial={emptyGoal()} saveLabel="Salvar meta" onSave={f => onSave(f, null)} onCancel={() => setAdding(false)} />
         : (
           <button onClick={() => setAdding(true)} className="w-full py-2.5 rounded-xl text-sm font-medium transition"
-            style={{ background: 'rgba(201,147,42,.15)', color: '#c9932a', border: '1px dashed rgba(201,147,42,.4)' }}>
+            style={{ background: 'rgba(201,147,42,.15)', color: '#8a6316', border: '1px dashed rgba(201,147,42,.4)' }}>
             + Adicionar meta
           </button>
         )}
@@ -667,23 +667,23 @@ function GoalsTab({ goals, onSave, onDelete, onMove }) {
         : (
           <div key={g.id} className="rounded-xl p-4 flex flex-wrap items-start gap-3" style={CARD}>
             <div className="flex flex-col gap-1 pt-1">
-              <button onClick={() => onMove(g, -1)} disabled={i === 0} className="text-slate-600 hover:text-white disabled:opacity-20 text-xs leading-none">▲</button>
-              <button onClick={() => onMove(g, 1)} disabled={i === goals.length - 1} className="text-slate-600 hover:text-white disabled:opacity-20 text-xs leading-none">▼</button>
+              <button onClick={() => onMove(g, -1)} disabled={i === 0} className="text-slate-600 hover:text-[#0a1e38] disabled:opacity-20 text-xs leading-none">▲</button>
+              <button onClick={() => onMove(g, 1)} disabled={i === goals.length - 1} className="text-slate-600 hover:text-[#0a1e38] disabled:opacity-20 text-xs leading-none">▼</button>
             </div>
             <div className="flex-1 min-w-[180px]">
               <p className="text-xs text-slate-500">{g.period}</p>
-              <p className="text-sm font-medium text-white mt-0.5">{g.title}</p>
+              <p className="text-sm font-medium text-[#0a1e38] mt-0.5">{g.title}</p>
               {g.detail && <p className="text-xs text-slate-500 mt-1 whitespace-pre-wrap">{g.detail}</p>}
             </div>
             <span className={`text-xs px-2.5 py-1 rounded-full border ${
-              g.status === 'completed' ? 'text-[#e8b04a] border-[rgba(201,147,42,.5)] bg-[rgba(201,147,42,.15)]'
+              g.status === 'completed' ? 'text-[#8a6316] border-[rgba(201,147,42,.5)] bg-[rgba(201,147,42,.15)]'
               : g.status === 'current' ? 'text-[#0a1e38] border-[#c9932a] bg-[#c9932a]'
-              : 'text-slate-400 border-[rgba(255,255,255,.2)] bg-[rgba(255,255,255,.06)]'}`}>
+              : 'text-slate-400 border-[rgba(10,30,56,.18)] bg-[rgba(10,30,56,.06)]'}`}>
               {labelOf(ITEM_STATUS, g.status)}
             </span>
             <div className="flex gap-2">
               <button onClick={() => { setAdding(false); setEditing(g.id) }} className={btnGhost} style={{ border: '1px solid rgba(201,147,42,.25)' }}>Editar</button>
-              <button onClick={() => onDelete(g)} className="text-xs px-3 py-2 rounded-lg text-red-400 hover:text-red-300" style={{ border: '1px solid rgba(239,68,68,.3)' }}>Excluir</button>
+              <button onClick={() => onDelete(g)} className="text-xs px-3 py-2 rounded-lg text-red-600 hover:text-red-700" style={{ border: '1px solid rgba(239,68,68,.3)' }}>Excluir</button>
             </div>
           </div>
         ))}
@@ -712,7 +712,7 @@ function ProfileForm({ profile, busy, onSave }) {
     <div className="rounded-xl p-5 space-y-4 max-w-2xl" style={CARD}>
       <div>
         <p className="text-xs text-slate-500 mb-1">E-mail de acesso</p>
-        <p className="text-sm text-slate-300">{profile.email}</p>
+        <p className="text-sm text-slate-700">{profile.email}</p>
         <p className="text-xs text-slate-600 mt-1">Para trocar a senha, use "Redefinir senha do mentorado" logo abaixo.</p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -759,7 +759,7 @@ function PasswordReset({ onReset }) {
   const [done, setDone] = useState('')
   return (
     <div className="rounded-xl p-5 space-y-3 max-w-2xl" style={CARD}>
-      <p className="text-sm font-medium text-white">Redefinir senha do mentorado</p>
+      <p className="text-sm font-medium text-[#0a1e38]">Redefinir senha do mentorado</p>
       <p className="text-xs text-slate-500">Defina uma senha nova e envie para o mentorado. A senha atual deixa de valer na hora.</p>
       <div className="flex flex-col sm:flex-row gap-2">
         <input value={pw} onChange={e => { setPw(e.target.value); setDone('') }} placeholder="Nova senha (mín. 8 caracteres)" className={inp} style={INP} />
@@ -770,9 +770,9 @@ function PasswordReset({ onReset }) {
         </button>
       </div>
       {done && (
-        <div className="rounded-lg p-3 text-xs" style={{ background: '#071526', border: '1px solid rgba(201,147,42,.4)' }}>
+        <div className="rounded-lg p-3 text-xs" style={{ background: '#f7f5f0', border: '1px solid rgba(201,147,42,.4)' }}>
           <p className="text-slate-400">Senha nova (envie ao mentorado):</p>
-          <p className="text-[#e8b04a] font-mono text-sm mt-1 select-all">{done}</p>
+          <p className="text-[#8a6316] font-mono text-sm mt-1 select-all">{done}</p>
         </div>
       )}
     </div>
@@ -805,12 +805,12 @@ function NewMenteeModal({ onCreate, onClose }) {
     : ''
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ background: 'rgba(0,0,0,.7)' }} onClick={onClose}>
+    <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ background: 'rgba(10,30,56,.45)' }} onClick={onClose}>
       <div className="w-full max-w-lg rounded-2xl p-6 space-y-4 max-h-[92vh] overflow-y-auto" style={CARD} onClick={e => e.stopPropagation()}>
         {!created ? (
           <>
             <div>
-              <h3 className="text-base font-semibold text-white">Novo mentorado</h3>
+              <h3 className="text-base font-semibold text-[#0a1e38]">Novo mentorado</h3>
               <p className="text-xs text-slate-500 mt-1">Cria o login de acesso e o perfil no portal. Você recebe o e-mail e a senha prontos para enviar.</p>
             </div>
             <div className="space-y-3">
@@ -837,25 +837,25 @@ function NewMenteeModal({ onCreate, onClose }) {
               <button onClick={submit} disabled={!canSubmit || saving} className="flex-1 py-2.5 rounded-xl text-sm font-medium" style={{ background: '#c9932a', color: '#0a1e38', opacity: (!canSubmit || saving) ? .5 : 1 }}>
                 {saving ? 'Cadastrando...' : 'Cadastrar mentorado'}
               </button>
-              <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm text-slate-400 hover:text-white transition" style={{ border: '1px solid rgba(201,147,42,.25)' }}>Cancelar</button>
+              <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm text-slate-400 hover:text-[#0a1e38] transition" style={{ border: '1px solid rgba(201,147,42,.25)' }}>Cancelar</button>
             </div>
           </>
         ) : (
           <>
             <div>
-              <h3 className="text-base font-semibold text-white">{created.name} cadastrado(a) ✓</h3>
+              <h3 className="text-base font-semibold text-[#0a1e38]">{created.name} cadastrado(a) ✓</h3>
               <p className="text-xs text-slate-500 mt-1">Envie estes dados de acesso. A senha não fica visível depois; se perder, redefina na aba Perfil.</p>
             </div>
-            <div className="rounded-lg p-4 space-y-1 text-sm" style={{ background: '#071526', border: '1px solid rgba(201,147,42,.4)' }}>
-              <p className="text-slate-400 text-xs">Link</p><p className="text-white select-all">{portalUrl}</p>
-              <p className="text-slate-400 text-xs pt-2">E-mail</p><p className="text-white select-all">{created.email}</p>
-              <p className="text-slate-400 text-xs pt-2">Senha</p><p className="text-[#e8b04a] font-mono select-all">{created.password}</p>
+            <div className="rounded-lg p-4 space-y-1 text-sm" style={{ background: '#f7f5f0', border: '1px solid rgba(201,147,42,.4)' }}>
+              <p className="text-slate-400 text-xs">Link</p><p className="text-[#0a1e38] select-all">{portalUrl}</p>
+              <p className="text-slate-400 text-xs pt-2">E-mail</p><p className="text-[#0a1e38] select-all">{created.email}</p>
+              <p className="text-slate-400 text-xs pt-2">Senha</p><p className="text-[#8a6316] font-mono select-all">{created.password}</p>
             </div>
             <textarea readOnly value={message} rows={6} className={inp + ' text-xs'} style={{ ...INP, resize: 'none' }} onFocus={e => e.target.select()} />
             <div className="flex gap-3">
               <button onClick={() => { navigator.clipboard && navigator.clipboard.writeText(message) }} className="flex-1 py-2.5 rounded-xl text-sm font-medium" style={{ background: '#c9932a', color: '#0a1e38' }}>Copiar mensagem</button>
-              <a href={'https://wa.me/?text=' + encodeURIComponent(message)} target="_blank" rel="noreferrer" className="flex-1 py-2.5 rounded-xl text-sm text-center text-slate-200" style={{ border: '1px solid rgba(201,147,42,.25)' }}>Enviar no WhatsApp</a>
-              <button onClick={onClose} className="py-2.5 px-4 rounded-xl text-sm text-slate-400 hover:text-white" style={{ border: '1px solid rgba(201,147,42,.25)' }}>Fechar</button>
+              <a href={'https://wa.me/?text=' + encodeURIComponent(message)} target="_blank" rel="noreferrer" className="flex-1 py-2.5 rounded-xl text-sm text-center text-slate-700" style={{ border: '1px solid rgba(201,147,42,.25)' }}>Enviar no WhatsApp</a>
+              <button onClick={onClose} className="py-2.5 px-4 rounded-xl text-sm text-slate-400 hover:text-[#0a1e38]" style={{ border: '1px solid rgba(201,147,42,.25)' }}>Fechar</button>
             </div>
           </>
         )}

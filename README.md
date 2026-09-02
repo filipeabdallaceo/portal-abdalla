@@ -67,29 +67,15 @@ WHERE email = 'ceo@filipeabdalla.com';
 
 ---
 
-## ETAPA 6 — Criar usuário para cada mentorado
+## ETAPA 6 — Cadastrar os mentorados (pelo próprio painel)
 
-Para cada um dos 4 mentorados:
+1. Entre no portal com seu login de admin
+2. No **Painel Admin**, clique em **"+ Novo mentorado"** (canto superior da lista)
+3. Preencha nome, e-mail e senha (ou clique em **Gerar** para criar uma senha)
+4. Clique em **Cadastrar** — o portal mostra o e-mail e a senha para você enviar ao mentorado
+5. Complete o perfil (especialidade, cidade, data de início, pasta do Drive) na aba **Perfil**
 
-1. No Supabase → **Authentication → Users → Add user**
-2. Use o e-mail do mentorado e crie uma senha temporária
-3. Depois de criar, rode este SQL para completar o perfil:
-
-```sql
-UPDATE public.profiles
-SET
-  full_name = 'Nome do Mentorado',
-  specialty = 'Fisioterapeuta Empreendedora',
-  city = 'São Paulo, SP',
-  start_date = '2026-02-01',
-  investment = 7000
-WHERE email = 'email@domentorado.com';
-```
-
-4. Envie para o mentorado:
-   - Link do portal: `seu-portal.vercel.app`
-   - E-mail de acesso
-   - Senha temporária
+Para trocar a senha de um mentorado depois: selecione o mentorado → aba **Perfil** → **Redefinir senha**.
 
 ---
 
